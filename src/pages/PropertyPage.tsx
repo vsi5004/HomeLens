@@ -185,6 +185,11 @@ export default function PropertyPage() {
         </section>
       )}
 
+      <section className="card">
+        <h2 className="card-title">Listing details</h2>
+        <ListingEditor property={p} onSaved={setProperty} />
+      </section>
+
       <FamilyDriveCard propertyId={p.id} geocoded={geocoded} />
 
       <AmenityCard propertyId={p.id} geocoded={geocoded} />
@@ -192,11 +197,6 @@ export default function PropertyPage() {
       <SchoolCard property={p} geocoded={geocoded} />
 
       <ParcelCard propertyId={p.id} geocoded={geocoded} />
-
-      <section className="card">
-        <h2 className="card-title">Listing details</h2>
-        <ListingEditor property={p} onSaved={setProperty} />
-      </section>
 
       <ExternalLinksCard property={p} />
 
