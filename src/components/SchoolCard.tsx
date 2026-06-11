@@ -197,7 +197,11 @@ export default function SchoolCard({ property, geocoded }: Props) {
                       </div>
                     )}
                   </td>
-                  <td>{s.schoolType ?? "—"}</td>
+                  <td>
+                    {(s.matchedNjdoeId && s.gradeSpan
+                      ? schoolLevels(s.gradeSpan).join("/")
+                      : s.schoolType) || "—"}
+                  </td>
                   <td>{formatDistance(s.distanceMeters)}</td>
                   <td>
                     {matched && metricEntries.length > 0 ? (
