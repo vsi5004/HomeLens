@@ -108,16 +108,32 @@ export default function PropertyPage() {
         Entered as “{p.addressInput}”. Status: {p.status}.
       </p>
 
-      {p.photoUrl && (
-        <img
-          className="property-hero"
-          src={p.photoUrl}
-          alt="Listing"
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-        />
-      )}
+      {p.photoUrl &&
+        (() => {
+          const hero = (
+            <img
+              className="property-hero"
+              src={p.photoUrl}
+              alt="Listing"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          );
+          return p.listingUrl ? (
+            <a
+              href={p.listingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="property-hero-link"
+              title="Open listing"
+            >
+              {hero}
+            </a>
+          ) : (
+            hero
+          );
+        })()}
 
       <section className="card">
         <h2 className="card-title">Location</h2>

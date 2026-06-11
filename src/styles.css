@@ -286,6 +286,11 @@ body {
   margin: 4px 0 16px;
 }
 
+/* When the hero is a link to the listing, keep the image's block layout. */
+.property-hero-link {
+  display: block;
+}
+
 .listing-photo-preview img {
   width: 100%;
   max-width: 320px;
