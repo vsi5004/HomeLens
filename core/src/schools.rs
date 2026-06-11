@@ -7,8 +7,18 @@ use crate::models::{NjdoeSchool, SchoolResult, NJDOE_SCHOOL_COLUMNS, SCHOOL_COLU
 use crate::places;
 use crate::settings_store::read_setting;
 
-/// How many nearest schools to keep when fetching from Google Places.
-const KEEP_SCHOOLS: i64 = 8;
+/// Focused per-level school searches. Google Places has no "middle school" type
+/// and a generic `school` type search pulls in daycares/tutors and crowds out a
+/// slightly-farther high school, so we run one text query per level and tag each
+/// result with its level (stored in `school_type`).
+const SCHOOL_QUERIES: &[(&str, &str)] = &[
+    ("Elementary", "elementary school"),
+    ("Middle", "middle school"),
+    ("High", "high school"),
+];
+
+/// How many nearest schools to keep per level.
+const KEEP_PER_LEVEL: i64 = 4;
 
 /// Read all cached nearby schools for a property (no API calls).
 pub fn get_schools(db: &Db, property_id: String) -> Result<Vec<SchoolResult>, String> {
@@ -78,7 +88,19 @@ pub async fn compute_schools(
         _ => return Err("property has no coordinates yet (geocode it first)".into()),
     };
 
-    let hits = places::search_nearby(lat, lng, "school", radius, KEEP_SCHOOLS, &api_key).await?;
+    // One focused text search per level; tag each hit with its level and dedupe
+    // across levels by place id (a K-8 school can match two queries).
+    let mut hits: Vec<(&'static str, places::PlaceHit)> = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for (level, query) in SCHOOL_QUERIES {
+        let found = places::search_text(lat, lng, query, radius, KEEP_PER_LEVEL, &api_key).await?;
+        for h in found {
+            let key = h.place_id.clone().unwrap_or_else(|| h.name.clone());
+            if seen.insert(key) {
+                hits.push((level, h));
+            }
+        }
+    }
     if hits.is_empty() {
         return Err("no nearby schools found".into());
     }
@@ -121,7 +143,7 @@ pub async fn compute_schools(
         .map_err(|e| e.to_string())?;
 
         let now = Utc::now().to_rfc3339();
-        for hit in &hits {
+        for (level, hit) in &hits {
             let preserved = prior.get(&hit.name);
             let (matched, metrics, district, grade_span) = match preserved {
                 Some((m, j, d, g)) => (m.clone(), j.clone(), d.clone(), g.clone()),
@@ -132,13 +154,14 @@ pub async fn compute_schools(
                     id, property_id, name, district, grade_span, school_type, address,
                     latitude, longitude, distance_meters, source, matched_njdoe_id,
                     metrics_json, fetched_at
-                 ) VALUES (?1, ?2, ?3, ?4, ?5, NULL, ?6, ?7, ?8, ?9, 'google_places', ?10, ?11, ?12)",
+                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'google_places', ?11, ?12, ?13)",
                 rusqlite::params![
                     Uuid::new_v4().to_string(),
                     property_id,
                     hit.name,
                     district,
                     grade_span,
+                    level,
                     hit.address,
                     hit.latitude,
                     hit.longitude,

@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 const PLACES_NEARBY_URL: &str = "https://places.googleapis.com/v1/places:searchNearby";
+const PLACES_TEXT_URL: &str = "https://places.googleapis.com/v1/places:searchText";
 
 /// A single nearby place returned by the Places API, with a straight-line
 /// distance from the search origin computed locally (no extra billed calls).
@@ -73,10 +74,6 @@ pub async fn search_nearby(
     max_results: i64,
     api_key: &str,
 ) -> Result<Vec<PlaceHit>, String> {
-    if api_key.trim().is_empty() {
-        return Err("missing Google web-service API key (set it in Settings)".into());
-    }
-
     let body = serde_json::json!({
         "includedTypes": [place_type],
         "maxResultCount": max_results,
@@ -88,10 +85,52 @@ pub async fn search_nearby(
             }
         }
     });
+    places_query(PLACES_NEARBY_URL, body, lat, lng, api_key).await
+}
+
+/// Find the nearest places matching a free-text query (e.g. "high school")
+/// around an origin using the Places API (New) `searchText`, ranked by distance.
+/// More precise than a generic type filter for schools, where Google has no
+/// "middle school" type and a type search pulls in daycares/tutors. Billed call.
+pub async fn search_text(
+    lat: f64,
+    lng: f64,
+    text_query: &str,
+    radius_meters: f64,
+    max_results: i64,
+    api_key: &str,
+) -> Result<Vec<PlaceHit>, String> {
+    let body = serde_json::json!({
+        "textQuery": text_query,
+        "maxResultCount": max_results,
+        "rankPreference": "DISTANCE",
+        "locationBias": {
+            "circle": {
+                "center": { "latitude": lat, "longitude": lng },
+                "radius": radius_meters,
+            }
+        }
+    });
+    places_query(PLACES_TEXT_URL, body, lat, lng, api_key).await
+}
+
+/// Shared POST + parse for the Places (New) search endpoints. Uses a field mask
+/// so only the fields we store are requested (cost control §17.1) and computes a
+/// local straight-line distance from the origin (no extra billed call).
+async fn places_query(
+    url: &str,
+    body: serde_json::Value,
+    lat: f64,
+    lng: f64,
+    api_key: &str,
+) -> Result<Vec<PlaceHit>, String> {
+    if api_key.trim().is_empty() {
+        return Err("missing Google web-service API key (set it in Settings)".into());
+    }
 
     let client = reqwest::Client::new();
     let resp = client
-        .post(PLACES_NEARBY_URL)
+        .post(url)
         .header("Content-Type", "application/json")
         .header("X-Goog-Api-Key", api_key)
         .header(

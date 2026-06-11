@@ -153,9 +153,10 @@ export default function SchoolCard({ property, geocoded }: Props) {
       </div>
 
       <p className="muted">
-        Nearby schools from Google Places. “Nearby” is not the same as “assigned” —
-        confirm boundaries with the district and match a school to imported NJDOE
-        data to see its metrics.
+        Nearest elementary, middle, and high schools from Google Places (one
+        focused search per level). “Nearby” is not the same as “assigned” — confirm
+        boundaries with the district and match a school to imported NJDOE data to
+        see its metrics.
       </p>
 
       {!geocoded && (
@@ -173,6 +174,7 @@ export default function SchoolCard({ property, geocoded }: Props) {
           <thead>
             <tr>
               <th>School</th>
+              <th>Level</th>
               <th>Distance</th>
               <th>NJDOE metrics</th>
               <th></th>
@@ -195,6 +197,7 @@ export default function SchoolCard({ property, geocoded }: Props) {
                       </div>
                     )}
                   </td>
+                  <td>{s.schoolType ?? "—"}</td>
                   <td>{formatDistance(s.distanceMeters)}</td>
                   <td>
                     {matched && metricEntries.length > 0 ? (
