@@ -6,12 +6,17 @@ import {
   listNjdoeSchools,
   matchSchoolToNjdoe,
   parseMetrics,
+  schoolLevels,
   setAssignedSchools,
   type NjdoeSchool,
+  type SchoolLevel,
   type SchoolResult,
 } from "../services/schools";
+import { schoolScoreFromMetrics } from "../services/scoring";
 import { formatDistance } from "../services/routes";
 import type { Property } from "../services/properties";
+
+const LEVELS: SchoolLevel[] = ["Elementary", "Middle", "High"];
 
 interface Props {
   property: Property;
@@ -117,6 +122,19 @@ export default function SchoolCard({ property, geocoded }: Props) {
       setError(String(e));
     }
   }
+
+  // Nearest matched school per level (classified by NJDOE grade span).
+  const matched = schools.filter((s) => s.matchedNjdoeId);
+  const nearestByLevel = LEVELS.map((level) => ({
+    level,
+    school:
+      matched
+        .filter((s) => schoolLevels(s.gradeSpan).includes(level))
+        .sort(
+          (a, b) =>
+            (a.distanceMeters ?? Infinity) - (b.distanceMeters ?? Infinity),
+        )[0] ?? null,
+  }));
 
   return (
     <section className="card">
@@ -256,6 +274,53 @@ export default function SchoolCard({ property, geocoded }: Props) {
             })}
           </tbody>
         </table>
+      )}
+
+      {matched.length > 0 && (
+        <>
+          <h3 className="subhead">By level (nearest matched)</h3>
+          <p className="muted">
+            Nearest school you’ve matched to NJDOE for each level, classified by
+            grade span. The score is the average of ELA %, Math %, graduation %, and
+            (100 − chronic absenteeism %).
+          </p>
+          <div className="level-grid">
+            {nearestByLevel.map(({ level, school }) => {
+              const metrics = school ? parseMetrics(school.metricsJson) : {};
+              const score = school ? schoolScoreFromMetrics(metrics) : null;
+              return (
+                <div key={level} className="level-card">
+                  <div className="level-head">
+                    <span className="level-name">{level}</span>
+                    {score != null && (
+                      <span className="level-score">{Math.round(score)}</span>
+                    )}
+                  </div>
+                  {school ? (
+                    <>
+                      <div className="level-school">{school.name}</div>
+                      <div className="muted">
+                        {school.gradeSpan ? `grades ${school.gradeSpan} · ` : ""}
+                        {formatDistance(school.distanceMeters)}
+                      </div>
+                      <ul className="metric-list">
+                        {Object.entries(metrics).map(([k, v]) => (
+                          <li key={k}>
+                            <span className="muted">{k}:</span> {String(v)}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <div className="muted">
+                      No matched {level.toLowerCase()} school.
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       <h3 className="subhead">Assigned schools (manual)</h3>

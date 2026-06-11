@@ -1,7 +1,7 @@
 import type { Property } from "./properties";
 import type { RouteResult } from "./routes";
 import type { AmenityResult } from "./amenities";
-import { parseMetrics, type SchoolResult } from "./schools";
+import { parseMetrics, schoolLevels, type SchoolResult } from "./schools";
 import { getSetting, setSetting, SETTING_KEYS } from "./settings";
 
 /**
@@ -216,6 +216,15 @@ export function overallScore(
 
 const METERS_PER_MILE = 1609.344;
 
+/** Per-matched-school detail behind a property's computed school sub-score. */
+export interface SchoolScoreDetail {
+  name: string;
+  levels: string[];
+  distanceMeters: number | null;
+  score: number | null;
+  metrics: Record<string, string | number>;
+}
+
 /** A fully-assembled comparison row: property facts + sub-scores + overall. */
 export interface ComparisonRow {
   property: Property;
@@ -227,6 +236,8 @@ export interface ComparisonRow {
   groceryMiles: number | null;
   postOfficeMiles: number | null;
   sub: SubScores;
+  /** Matched schools that feed `sub.school`, for the dashboard breakdown. */
+  schoolBreakdown: SchoolScoreDetail[];
   overall: number | null;
 }
 
@@ -293,6 +304,19 @@ export function buildRow(
     subjective: property.subjectiveScore,
   };
 
+  const schoolBreakdown: SchoolScoreDetail[] = schools
+    .filter((s) => s.matchedNjdoeId)
+    .map((s) => {
+      const metrics = parseMetrics(s.metricsJson);
+      return {
+        name: s.name,
+        levels: schoolLevels(s.gradeSpan),
+        distanceMeters: s.distanceMeters,
+        score: schoolScoreFromMetrics(metrics),
+        metrics,
+      };
+    });
+
   return {
     property,
     town: town(property),
@@ -303,6 +327,7 @@ export function buildRow(
     groceryMiles,
     postOfficeMiles,
     sub,
+    schoolBreakdown,
     overall: overallScore(sub, weights),
   };
 }

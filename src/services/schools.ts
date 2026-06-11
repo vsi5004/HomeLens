@@ -108,6 +108,36 @@ export async function setAssignedSchools(
   await invoke("set_assigned_schools", { propertyId, elementary, middle, high });
 }
 
+export type SchoolLevel = "Elementary" | "Middle" | "High";
+
+const GRADE_ORD: Record<string, number> = { PK: -1, K: 0 };
+function gradeOrd(token: string): number | null {
+  const t = token.trim().toUpperCase();
+  if (t in GRADE_ORD) return GRADE_ORD[t];
+  const n = parseInt(t, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Map an NJDOE grade span ("PK-5", "6-8", "8-12", "K") to the level(s) it serves.
+ * A school can serve more than one (e.g. K-8 → Elementary + Middle).
+ */
+export function schoolLevels(gradeSpan: string | null): SchoolLevel[] {
+  if (!gradeSpan) return [];
+  const parts = gradeSpan.split("-");
+  const lo = gradeOrd(parts[0]);
+  const hi = gradeOrd(parts[parts.length - 1]);
+  if (lo == null || hi == null) return [];
+  const ranges: [SchoolLevel, number, number][] = [
+    ["Elementary", -1, 5],
+    ["Middle", 6, 8],
+    ["High", 9, 12],
+  ];
+  return ranges
+    .filter(([, rlo, rhi]) => lo <= rhi && hi >= rlo)
+    .map(([level]) => level);
+}
+
 /** Parse a metrics JSON blob into a label→value record (tolerant of nulls). */
 export function parseMetrics(
   json: string | null,

@@ -974,6 +974,47 @@ code {
   line-height: 1.5;
 }
 
+/* Hover-for-detail cue on dashboard School / Overall cells. */
+.cell-detail {
+  cursor: help;
+  border-bottom: 1px dotted var(--border);
+}
+
+/* Nearest matched school per level (Schools card). */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.level-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: #f7f9fc;
+}
+
+.level-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.level-name {
+  font-weight: 600;
+}
+
+.level-score {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.level-school {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
 .njdoe-picker {
   margin-top: 8px;
   padding: 10px;

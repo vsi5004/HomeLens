@@ -86,6 +86,43 @@ function locationLabel(p: Property): string {
   return parts.length ? parts.join(", ") : p.addressInput;
 }
 
+/** Hover tooltip: the per-matched-school metrics behind the computed School score. */
+function schoolBreakdownTitle(r: ComparisonRow): string {
+  if (r.schoolBreakdown.length === 0) {
+    return "No matched schools yet — on a property's Schools card, match nearby schools to NJDOE to compute this score.";
+  }
+  return r.schoolBreakdown
+    .map((d) => {
+      const lvl = d.levels.length ? d.levels.join("/") : "—";
+      const m = d.metrics;
+      const bits = [
+        m["ELA proficiency"] != null ? `ELA ${m["ELA proficiency"]}` : null,
+        m["Math proficiency"] != null ? `Math ${m["Math proficiency"]}` : null,
+        m["Graduation rate"] != null ? `Grad ${m["Graduation rate"]}` : null,
+        m["Chronic absenteeism"] != null ? `Absent ${m["Chronic absenteeism"]}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const score = d.score == null ? "—" : Math.round(d.score);
+      return `${d.name} (${lvl}) — score ${score}\n   ${bits}`;
+    })
+    .join("\n");
+}
+
+/** Hover tooltip: the sub-scores behind the Overall score. */
+function overallBreakdownTitle(r: ComparisonRow): string {
+  const s = r.sub;
+  const fmt = (n: number | null) => (n == null ? "—" : String(Math.round(n)));
+  return [
+    `Family access: ${fmt(s.familyAccess)}`,
+    `School (NJDOE): ${fmt(s.school)}`,
+    `Amenities: ${fmt(s.amenity)}`,
+    `Property value: ${fmt(s.propertyValue)}`,
+    `Tax: ${fmt(s.tax)}`,
+    `Subjective: ${fmt(s.subjective)}`,
+  ].join("\n");
+}
+
 const COLUMNS: Column[] = [
   {
     key: "photo",
@@ -223,7 +260,11 @@ const COLUMNS: Column[] = [
     label: "School",
     numeric: true,
     value: (r) => r.sub.school,
-    render: (r) => fmtScore(r.sub.school),
+    render: (r) => (
+      <span className="cell-detail" title={schoolBreakdownTitle(r)}>
+        {fmtScore(r.sub.school)}
+      </span>
+    ),
     csv: (r) => (r.sub.school == null ? "" : String(Math.round(r.sub.school))),
   },
   {
@@ -239,7 +280,11 @@ const COLUMNS: Column[] = [
     label: "Overall",
     numeric: true,
     value: (r) => r.overall,
-    render: (r) => <strong>{fmtScore(r.overall)}</strong>,
+    render: (r) => (
+      <strong className="cell-detail" title={overallBreakdownTitle(r)}>
+        {fmtScore(r.overall)}
+      </strong>
+    ),
     csv: (r) => (r.overall == null ? "" : String(Math.round(r.overall))),
   },
   {
