@@ -131,6 +131,7 @@ sudo systemctl start homelens-server
 | `HOMELENS_DB`     | `homelens.db`      | SQLite database path                     |
 | `HOMELENS_BIND`   | `0.0.0.0:8080`     | Listen address:port                      |
 | `HOMELENS_STATIC` | `dist`             | Directory of the built frontend          |
+| `HOMELENS_MAX_UPLOAD_MB` | `512`       | Max parcel-upload (GeoJSON) size in MB    |
 | `RUST_LOG`        | `homelens_server=info` | Log filter (tracing/env-filter)      |
 
 ## Troubleshooting

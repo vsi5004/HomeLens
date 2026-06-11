@@ -9,6 +9,7 @@
 //!   HOMELENS_DB     path to the SQLite file        (default: ./homelens.db)
 //!   HOMELENS_BIND   address:port to bind           (default: 0.0.0.0:8080)
 //!   HOMELENS_STATIC directory of built frontend    (default: ./dist)
+//!   HOMELENS_MAX_UPLOAD_MB  max parcel-upload size in MB  (default: 512)
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -255,6 +256,14 @@ async fn main() {
         .unwrap_or_else(|_| "0.0.0.0:8080".to_string())
         .parse()
         .expect("HOMELENS_BIND must be a valid address:port");
+    // Max multipart upload size (parcel GeoJSON). A whole NJ county joined to
+    // MOD-IV can exceed the old 256 MB cap; the upload is buffered in memory and
+    // the JSON parse multiplies that, so keep this sane for the host's RAM.
+    let max_upload_mb: usize = std::env::var("HOMELENS_MAX_UPLOAD_MB")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .filter(|&mb| mb > 0)
+        .unwrap_or(512);
 
     let conn = core::db::open_at(&db_path).expect("failed to open database");
     let state = AppState {
@@ -273,7 +282,7 @@ async fn main() {
         .route("/api/import_parcels", post(import_parcels_upload))
         .route("/api/:cmd", post(dispatch))
         .fallback_service(static_service)
-        .layer(DefaultBodyLimit::max(256 * 1024 * 1024))
+        .layer(DefaultBodyLimit::max(max_upload_mb * 1024 * 1024))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
