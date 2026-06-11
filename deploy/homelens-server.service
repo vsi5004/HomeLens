@@ -1,0 +1,24 @@
+[Unit]
+Description=HomeLens NJ web server (LAN house-hunting app)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Dedicated unprivileged user (see deploy/README for setup).
+User=homelens
+Group=homelens
+EnvironmentFile=/etc/homelens/homelens.env
+ExecStart=/opt/homelens/homelens-server
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the service only needs to read its static dir and write its DB dir.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/homelens
+
+[Install]
+WantedBy=multi-user.target

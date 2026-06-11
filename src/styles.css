@@ -1,0 +1,804 @@
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --sidebar: #1f2733;
+  --sidebar-fg: #c7d0db;
+  --sidebar-fg-active: #ffffff;
+  --border: #dfe3e8;
+  --text: #1f2733;
+  --muted: #6b7682;
+  --accent: #2f6feb;
+  --accent-fg: #ffffff;
+  --ok: #1a7f4b;
+  --err: #c0392b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+}
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--sidebar);
+  color: var(--sidebar-fg);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--sidebar-fg-active);
+  padding: 8px 8px 16px;
+}
+
+.brand-mark {
+  font-size: 18px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-link {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--sidebar-fg);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--sidebar-fg-active);
+}
+
+.nav-link--active {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 32px 60px;
+}
+
+.page-title {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--panel);
+}
+
+/* Forms / cards */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.card-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  font-weight: 500;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.autofill-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.autofill-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.autofill-row .btn {
+  white-space: nowrap;
+}
+
+.autofill-note {
+  margin: 0;
+  font-size: 13px;
+}
+
+.autofill-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #d8d8e0);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.autofill-extras-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 14px;
+}
+
+.autofill-extras-list li {
+  font-weight: 500;
+}
+
+.bookmarklet-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.bookmarklet-link {
+  text-decoration: none;
+  cursor: grab;
+}
+
+.field input,
+.field select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text);
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(47, 111, 235, 0.15);
+}
+
+code {
+  background: #eef0f3;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.btn--primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn--sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.btn--ghost:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Phase 5 — listing editor + external links */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.form-grid .field {
+  margin-bottom: 0;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.field textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+  resize: vertical;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(47, 111, 235, 0.15);
+}
+
+.form-actions--left {
+  margin-top: 14px;
+}
+
+.links-generators {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.link-gen {
+  display: inline-flex;
+  align-items: center;
+}
+
+.links-list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.links-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: underline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.links-add {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.links-add input {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.links-add input[type="url"] {
+  flex: 1;
+  min-width: 200px;
+}
+
+.route-errors {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.status {
+  font-size: 13px;
+}
+
+.status--ok {
+  color: var(--ok);
+}
+
+.status--err {
+  color: var(--err);
+}
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: #fafbfc;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.table a:hover {
+  text-decoration: underline;
+}
+
+/* Phase 6 — comparison dashboard */
+.dashboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-head .muted {
+  max-width: 760px;
+}
+
+.dashboard-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 4px 0 14px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.control select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.control--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.weights-editor {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: #fafbfc;
+}
+
+.weights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 20px;
+  margin: 8px 0 12px;
+}
+
+.weight-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.weight-field input[type="range"] {
+  width: 100%;
+}
+
+.table-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.table--compare {
+  border: none;
+  border-radius: 0;
+  min-width: 1100px;
+}
+
+.table--compare th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table--compare th.sortable:hover {
+  color: var(--text);
+}
+
+.table--compare td.num,
+.table--compare th.num {
+  text-align: right;
+}
+
+.sort-arrow {
+  font-size: 10px;
+}
+
+.mono {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Detail rows */
+.detail-row {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  flex: 0 0 140px;
+  color: var(--muted);
+}
+
+.detail-value {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Maps */
+.page--wide {
+  max-width: 1040px;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-head .card-title {
+  margin: 0;
+}
+
+.card-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.card-link:hover {
+  text-decoration: underline;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 320px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #e9edf1;
+}
+
+.map-canvas--tall {
+  height: 600px;
+}
+
+/* Map View page: fill the entire content area in full screen. */
+.page--map {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.page--map .muted {
+  margin-bottom: 8px;
+}
+
+.map-canvas--fill {
+  flex: 1 1 auto;
+  min-height: 320px;
+  height: auto;
+}
+
+.map-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.map-controls__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.map-controls__field input {
+  width: 110px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted, #555);
+}
+
+.chip {
+  display: inline-block;
+  margin: 0 6px 0 0;
+  padding: 2px 10px;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--accent, #2563eb);
+}
+
+.chip--active {
+  background: var(--accent, #2563eb);
+  border-color: var(--accent, #2563eb);
+  color: #fff;
+}
+
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  margin-left: 8px;
+}
+
+.swatch--parents {
+  background: #2f6feb;
+}
+
+.swatch--inlaws {
+  background: #1a7f4b;
+}
+
+.swatch--overlap {
+  background: #e67e22;
+}
+
+.sv-canvas {
+  width: 100%;
+  height: 320px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #e9edf1;
+}
+
+/* Phase 7 — schools + NJDOE matching */
+.subhead {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 18px 0 10px;
+}
+
+.metric-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.njdoe-picker {
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #f7f9fc;
+  min-width: 260px;
+}
+
+.njdoe-picker input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.njdoe-results {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.njdoe-option {
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.njdoe-option:hover {
+  border-color: var(--accent);
+  background: #f0f5ff;
+}
+
+/* Phase 8 — parcel / MOD-IV card */
+.card-head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.parcel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 18px;
+  margin-bottom: 10px;
+}
+
+.parcel-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.parcel-grid .detail-label {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.parcel-grid .detail-value {
+  flex: none;
+  font-size: 14px;
+}
+

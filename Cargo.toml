@@ -1,0 +1,5 @@
+[workspace]
+resolver = "2"
+members = ["core", "server", "src-tauri"]
+
+# `target/` is shared across all workspace members at the repo root.
