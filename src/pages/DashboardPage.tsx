@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { listProperties, type Property } from "../services/properties";
+import {
+  listProperties,
+  updateProperty,
+  type Property,
+} from "../services/properties";
 import { getAllRoutes, type RouteResult } from "../services/routes";
 import { getAllAmenities, type AmenityResult } from "../services/amenities";
 import {
@@ -282,6 +286,114 @@ function downloadCsv(rows: ComparisonRow[]): void {
   URL.revokeObjectURL(url);
 }
 
+/** Build a full PropertyUpdate from a property, since update_property overwrites
+ * every column (a null clears it). Override only the fields you intend to change. */
+function fullUpdate(p: Property) {
+  return {
+    status: p.status,
+    listingUrl: p.listingUrl,
+    listingSource: p.listingSource,
+    listPrice: p.listPrice,
+    manualEstimatedValue: p.manualEstimatedValue,
+    annualTaxes: p.annualTaxes,
+    hoaMonthly: p.hoaMonthly,
+    beds: p.beds,
+    baths: p.baths,
+    sqft: p.sqft,
+    lotSize: p.lotSize,
+    yearBuilt: p.yearBuilt,
+    propertyType: p.propertyType,
+    subjectiveScore: p.subjectiveScore,
+    manualSchoolScore: p.manualSchoolScore,
+    manualPropertyValueScore: p.manualPropertyValueScore,
+    notes: p.notes,
+    photoUrl: p.photoUrl,
+  };
+}
+
+/** Inline notes editor for a dashboard row. Click to edit; saves on blur or
+ * Ctrl/Cmd+Enter, cancels on Escape. */
+function NotesCell({
+  property,
+  onSaved,
+}: {
+  property: Property;
+  onSaved: (p: Property) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(property.notes ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!editing) setText(property.notes ?? "");
+  }, [property.notes, editing]);
+
+  useEffect(() => {
+    if (editing) ref.current?.focus();
+  }, [editing]);
+
+  async function commit() {
+    const next = text.trim() ? text.trim() : null;
+    if (next === (property.notes ?? null)) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setError(false);
+    try {
+      const saved = await updateProperty(property.id, {
+        ...fullUpdate(property),
+        notes: next,
+      });
+      onSaved(saved);
+      setEditing(false);
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        className={`notes-cell${property.notes ? "" : " notes-cell--empty"}`}
+        title="Click to edit notes"
+        onClick={() => setEditing(true)}
+      >
+        {property.notes || "Add notes…"}
+      </button>
+    );
+  }
+
+  return (
+    <div className="notes-edit">
+      <textarea
+        ref={ref}
+        rows={3}
+        value={text}
+        disabled={saving}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setText(property.notes ?? "");
+            setEditing(false);
+          } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            commit();
+          }
+        }}
+      />
+      {saving && <span className="notes-hint">Saving…</span>}
+      {error && <span className="notes-hint notes-hint--err">Save failed</span>}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [routes, setRoutes] = useState<RouteResult[]>([]);
@@ -387,6 +499,12 @@ export default function DashboardPage() {
   async function onResetWeights() {
     setWeights(DEFAULT_WEIGHTS);
     await saveWeights(DEFAULT_WEIGHTS);
+  }
+
+  function onNotesSaved(saved: Property) {
+    setProperties((prev) =>
+      prev.map((p) => (p.id === saved.id ? saved : p)),
+    );
   }
 
   const weightSum = Object.values(weights).reduce((a, b) => a + b, 0);
@@ -528,6 +646,7 @@ export default function DashboardPage() {
                       )}
                     </th>
                   ))}
+                  <th className="notes-col">Notes</th>
                 </tr>
               </thead>
               <tbody>
@@ -538,6 +657,9 @@ export default function DashboardPage() {
                         {c.render(r)}
                       </td>
                     ))}
+                    <td className="notes-col">
+                      <NotesCell property={r.property} onSaved={onNotesSaved} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

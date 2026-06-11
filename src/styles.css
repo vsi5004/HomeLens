@@ -657,6 +657,57 @@ code {
   color: var(--text);
 }
 
+/* Inline notes column on the comparison table. */
+.notes-col {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.notes-cell {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font: inherit;
+  color: var(--text);
+  cursor: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 88px;
+  overflow-y: auto;
+}
+
+.notes-cell:hover {
+  border-color: var(--border);
+  background: #fafbfc;
+}
+
+.notes-cell--empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.notes-edit textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.notes-hint {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notes-hint--err {
+  color: var(--err);
+}
+
 .table--compare td.num,
 .table--compare th.num {
   text-align: right;
