@@ -65,7 +65,15 @@ interface Column {
   value: (r: ComparisonRow) => number | string | null;
   render: (r: ComparisonRow) => React.ReactNode;
   csv: (r: ComparisonRow) => string;
+  /** When false, the column is shown in the table but omitted from CSV export. */
+  inCsv?: boolean;
 }
+
+/** Extra fields exported to CSV only (too long/unwieldy for the comparison table). */
+const CSV_EXTRA_COLUMNS: { label: string; csv: (r: ComparisonRow) => string }[] = [
+  { label: "Listing URL", csv: (r) => r.property.listingUrl ?? "" },
+  { label: "Notes", csv: (r) => r.property.notes ?? "" },
+];
 
 function locationLabel(p: Property): string {
   if (p.addressNormalized) return p.addressNormalized;
@@ -122,6 +130,7 @@ const COLUMNS: Column[] = [
     value: (r) => r.property.status,
     render: (r) => r.property.status,
     csv: (r) => r.property.status,
+    inCsv: false,
   },
   {
     key: "price",
@@ -244,9 +253,19 @@ function csvCell(s: string): string {
 }
 
 function downloadCsv(rows: ComparisonRow[]): void {
-  const header = COLUMNS.map((c) => csvCell(c.label)).join(",");
+  const cols = COLUMNS.filter((c) => c.inCsv !== false);
+  const labels = [
+    ...cols.map((c) => c.label),
+    ...CSV_EXTRA_COLUMNS.map((c) => c.label),
+  ];
+  const header = labels.map(csvCell).join(",");
   const lines = rows.map((r) =>
-    COLUMNS.map((c) => csvCell(c.csv(r))).join(","),
+    [
+      ...cols.map((c) => c.csv(r)),
+      ...CSV_EXTRA_COLUMNS.map((c) => c.csv(r)),
+    ]
+      .map(csvCell)
+      .join(","),
   );
   const blob = new Blob([[header, ...lines].join("\n")], {
     type: "text/csv;charset=utf-8;",
