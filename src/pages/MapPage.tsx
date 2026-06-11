@@ -110,6 +110,7 @@ export default function MapPage() {
         lat: p.latitude!,
         lng: p.longitude!,
         title: p.addressNormalized ?? p.addressInput,
+        imageUrl: p.photoUrl,
         onClick: () => navigate(`/property/${p.id}`),
       }));
 

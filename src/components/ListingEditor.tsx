@@ -58,6 +58,7 @@ export default function ListingEditor({ property, onSaved }: Props) {
   const [lotSize, setLotSize] = useState(property.lotSize ?? "");
   const [yearBuilt, setYearBuilt] = useState(num(property.yearBuilt));
   const [propertyType, setPropertyType] = useState(property.propertyType ?? "");
+  const [photoUrl, setPhotoUrl] = useState(property.photoUrl ?? "");
   const [schoolScore, setSchoolScore] = useState(num(property.manualSchoolScore));
   const [valueScore, setValueScore] = useState(
     num(property.manualPropertyValueScore),
@@ -91,6 +92,7 @@ export default function ListingEditor({ property, onSaved }: Props) {
       manualSchoolScore: toInt(schoolScore),
       manualPropertyValueScore: toInt(valueScore),
       notes: str(notes),
+      photoUrl: str(photoUrl),
     };
     try {
       const saved = await updateProperty(property.id, update);
@@ -218,6 +220,26 @@ export default function ListingEditor({ property, onSaved }: Props) {
             onChange={(e) => setListingUrl(e.target.value)}
           />
         </label>
+        <label className="field field--wide">
+          <span>Photo URL</span>
+          <input
+            type="url"
+            value={photoUrl}
+            placeholder="https://… (listing preview image)"
+            onChange={(e) => setPhotoUrl(e.target.value)}
+          />
+        </label>
+        {photoUrl.trim() && (
+          <div className="field field--wide listing-photo-preview">
+            <img
+              src={photoUrl.trim()}
+              alt="Listing preview"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <p className="muted manual-scores-note">

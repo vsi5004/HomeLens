@@ -41,12 +41,14 @@ export interface Property {
   manualSchoolScore: number | null;
   manualPropertyValueScore: number | null;
   notes: string | null;
+  photoUrl: string | null;
 }
 
 export interface NewProperty {
   addressInput: string;
   listingUrl?: string | null;
   listPrice?: number | null;
+  photoUrl?: string | null;
 }
 
 /** Editable listing/manual fields. Sent in full; a `null` clears the column. */
@@ -68,6 +70,7 @@ export interface PropertyUpdate {
   manualSchoolScore?: number | null;
   manualPropertyValueScore?: number | null;
   notes?: string | null;
+  photoUrl?: string | null;
 }
 
 /** Property plus a best-effort geocoding warning (null when geocoding worked). */

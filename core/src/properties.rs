@@ -15,6 +15,7 @@ pub struct NewProperty {
     pub address_input: String,
     pub listing_url: Option<String>,
     pub list_price: Option<i64>,
+    pub photo_url: Option<String>,
 }
 
 /// Result of creating a property. `geocode_error` is populated (and the property
@@ -57,11 +58,11 @@ pub async fn create_property(
             "INSERT INTO properties (
                 id, created_at, updated_at, status,
                 address_input, address_normalized, street, city, state, zip, county,
-                latitude, longitude, listing_url, list_price
+                latitude, longitude, listing_url, list_price, photo_url
             ) VALUES (
                 ?1, ?2, ?3, 'new',
                 ?4, ?5, ?6, ?7, ?8, ?9, ?10,
-                ?11, ?12, ?13, ?14
+                ?11, ?12, ?13, ?14, ?15
             )",
             rusqlite::params![
                 id,
@@ -78,6 +79,7 @@ pub async fn create_property(
                 geo.as_ref().map(|g| g.longitude),
                 property.listing_url,
                 property.list_price,
+                property.photo_url,
             ],
         )
         .map_err(|e| e.to_string())?;
@@ -144,6 +146,7 @@ pub struct PropertyUpdate {
     pub manual_school_score: Option<i64>,
     pub manual_property_value_score: Option<i64>,
     pub notes: Option<String>,
+    pub photo_url: Option<String>,
 }
 pub fn update_property(
     db: &Db,
@@ -161,7 +164,8 @@ pub fn update_property(
                     manual_estimated_value = ?6, annual_taxes = ?7, hoa_monthly = ?8,
                     beds = ?9, baths = ?10, sqft = ?11, lot_size = ?12, year_built = ?13,
                     property_type = ?14, subjective_score = ?15, manual_school_score = ?16,
-                    manual_property_value_score = ?17, notes = ?18, updated_at = ?19
+                    manual_property_value_score = ?17, notes = ?18, photo_url = ?19,
+                    updated_at = ?20
                  WHERE id = ?1",
                 rusqlite::params![
                     id,
@@ -182,6 +186,7 @@ pub fn update_property(
                     update.manual_school_score,
                     update.manual_property_value_score,
                     update.notes,
+                    update.photo_url,
                     now,
                 ],
             )

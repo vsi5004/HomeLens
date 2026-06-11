@@ -16,6 +16,7 @@ const MIGRATIONS: &[(i64, &str)] = &[
     (2, include_str!("../migrations/0002_isochrone_cache.sql")),
     (3, include_str!("../migrations/0003_njdoe_schools.sql")),
     (4, include_str!("../migrations/0004_parcels.sql")),
+    (5, include_str!("../migrations/0005_listing_photo.sql")),
 ];
 
 /// Open (creating if needed) the SQLite database at the given path and run any

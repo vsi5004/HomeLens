@@ -40,6 +40,7 @@ export default function AddPropertyPage() {
   const [address, setAddress] = useState("");
   const [listingUrl, setListingUrl] = useState("");
   const [listPrice, setListPrice] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [extras, setExtras] = useState<Extras>(EMPTY_EXTRAS);
 
   const [saving, setSaving] = useState(false);
@@ -62,6 +63,7 @@ export default function AddPropertyPage() {
       propertyType: cur.propertyType ?? meta.propertyType ?? null,
     }));
     if (meta.resolvedUrl) setListingUrl((cur) => cur || meta.resolvedUrl || "");
+    if (meta.photoUrl) setPhotoUrl((cur) => cur || meta.photoUrl || "");
 
     const filled: string[] = [];
     if (meta.address) filled.push("address");
@@ -70,6 +72,7 @@ export default function AddPropertyPage() {
     if (meta.baths != null) filled.push("baths");
     if (meta.sqft != null) filled.push("sq ft");
     if (meta.yearBuilt != null) filled.push("year built");
+    if (meta.photoUrl) filled.push("photo");
 
     const warns = (meta.warnings ?? []).join(" ");
     if (filled.length === 0) {
@@ -144,6 +147,7 @@ export default function AddPropertyPage() {
         addressInput: trimmed,
         listingUrl: listingUrl.trim() || null,
         listPrice: parsedPrice,
+        photoUrl: photoUrl.trim() || null,
       });
 
       // Persist any extra listing details captured by autofill. update_property
@@ -165,6 +169,7 @@ export default function AddPropertyPage() {
             manualSchoolScore: p.manualSchoolScore,
             manualPropertyValueScore: p.manualPropertyValueScore,
             notes: p.notes,
+            photoUrl: p.photoUrl,
             beds: extras.beds,
             baths: extras.baths,
             sqft: extras.sqft,
@@ -254,6 +259,20 @@ export default function AddPropertyPage() {
               placeholder="450000"
             />
           </label>
+
+          {photoUrl && (
+            <div className="autofill-photo">
+              <span className="field-label">Listing photo</span>
+              <img
+                className="autofill-photo-img"
+                src={photoUrl}
+                alt="Listing preview"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          )}
 
           {hasExtras(extras) && (
             <div className="autofill-extras">

@@ -108,6 +108,17 @@ export default function PropertyPage() {
         Entered as “{p.addressInput}”. Status: {p.status}.
       </p>
 
+      {p.photoUrl && (
+        <img
+          className="property-hero"
+          src={p.photoUrl}
+          alt="Listing"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
+      )}
+
       <section className="card">
         <h2 className="card-title">Location</h2>
         <Row label="Street" value={p.street} />
@@ -150,6 +161,7 @@ export default function PropertyPage() {
                   lat: p.latitude!,
                   lng: p.longitude!,
                   title: p.addressNormalized ?? p.addressInput,
+                  imageUrl: p.photoUrl,
                 },
               ]}
             />

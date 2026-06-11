@@ -43,6 +43,8 @@ pub struct ListingMetadata {
     pub property_type: Option<String>,
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
+    /// Listing preview photo (JSON-LD `image` / `og:image`) — a URL only.
+    pub photo_url: Option<String>,
     /// Human-readable notes (e.g. "nothing parseable found").
     pub warnings: Vec<String>,
 }
@@ -245,6 +247,33 @@ fn extract_listing_obj(v: &Value, m: &mut ListingMetadata) {
     if m.property_type.is_none() {
         m.property_type = property_type_from_types(&types_of(v));
     }
+    if m.photo_url.is_none() {
+        m.photo_url = extract_image(v.get("image"));
+    }
+}
+
+/// Extract an image URL from a JSON-LD `image` value (string, array, or
+/// `ImageObject` with `url`/`contentUrl`).
+fn extract_image(v: Option<&Value>) -> Option<String> {
+    match v? {
+        Value::String(s) => non_empty(s),
+        Value::Array(a) => a.iter().find_map(|x| extract_image(Some(x))),
+        Value::Object(o) => o
+            .get("url")
+            .and_then(Value::as_str)
+            .and_then(non_empty)
+            .or_else(|| o.get("contentUrl").and_then(Value::as_str).and_then(non_empty)),
+        _ => None,
+    }
+}
+
+fn non_empty(s: &str) -> Option<String> {
+    let t = s.trim();
+    if t.is_empty() {
+        None
+    } else {
+        Some(t.to_string())
+    }
 }
 
 fn property_type_from_types(types: &[String]) -> Option<String> {
@@ -435,6 +464,13 @@ fn apply_meta(meta: &HashMap<String, String>, m: &mut ListingMetadata) {
         }
     }
 
+    if m.photo_url.is_none() {
+        m.photo_url = get("og:image")
+            .or_else(|| get("og:image:secure_url"))
+            .or_else(|| get("twitter:image"))
+            .and_then(non_empty);
+    }
+
     // Best-effort beds/baths/sqft from free text when not already structured.
     if m.beds.is_none() || m.baths.is_none() || m.sqft.is_none() {
         let mut text = String::new();
@@ -548,6 +584,7 @@ mod tests {
            "numberOfBedrooms":6,"numberOfBathroomsTotal":4,
            "floorSize":{"value":"3089"},"yearBuilt":1998,
            "geo":{"latitude":40.2627967,"longitude":-74.81723194},
+           "image":["https://example.com/photo1.jpg","https://example.com/photo2.jpg"],
            "offers":{"@type":"Offer","price":"595000"}}
           </script></head><body></body></html>"#;
         let m = parse_listing_html(html);
@@ -559,6 +596,7 @@ mod tests {
         assert_eq!(m.year_built, Some(1998));
         assert_eq!(m.property_type.as_deref(), Some("Single Family"));
         assert_eq!(m.latitude, Some(40.2627967));
+        assert_eq!(m.photo_url.as_deref(), Some("https://example.com/photo1.jpg"));
     }
 
     #[test]
@@ -568,6 +606,7 @@ mod tests {
           <meta property="og:description" content="Charming 4 bed, 2.5 bath home with 2100 sqft.">
           <meta name="geo.position" content="40.21;-74.69">
           <meta property="og:price:amount" content="450000">
+          <meta property="og:image" content="https://cdn.example.com/listing.jpg">
         </head><body></body></html>"#;
         let m = parse_listing_html(html);
         assert_eq!(m.address.as_deref(), Some("123 Main St, Hamilton, NJ 08610"));
@@ -576,5 +615,6 @@ mod tests {
         assert_eq!(m.baths, Some(2.5));
         assert_eq!(m.sqft, Some(2100));
         assert_eq!(m.latitude, Some(40.21));
+        assert_eq!(m.photo_url.as_deref(), Some("https://cdn.example.com/listing.jpg"));
     }
 }

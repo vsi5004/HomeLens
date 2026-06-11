@@ -42,6 +42,7 @@ pub struct Property {
     pub manual_school_score: Option<i64>,
     pub manual_property_value_score: Option<i64>,
     pub notes: Option<String>,
+    pub photo_url: Option<String>,
 }
 
 /// All `properties` columns in a fixed order, reused by SELECT statements so the
@@ -51,7 +52,7 @@ pub const PROPERTY_COLUMNS: &str = "id, created_at, updated_at, status, \
     listing_url, listing_source, list_price, manual_estimated_value, annual_taxes, hoa_monthly, \
     beds, baths, sqft, lot_size, year_built, property_type, \
     assigned_elementary_school, assigned_middle_school, assigned_high_school, \
-    subjective_score, manual_school_score, manual_property_value_score, notes";
+    subjective_score, manual_school_score, manual_property_value_score, notes, photo_url";
 
 impl Property {
     /// Build a `Property` from a row selected with `PROPERTY_COLUMNS`.
@@ -89,6 +90,7 @@ impl Property {
             manual_school_score: row.get(29)?,
             manual_property_value_score: row.get(30)?,
             notes: row.get(31)?,
+            photo_url: row.get(32)?,
         })
     }
 }

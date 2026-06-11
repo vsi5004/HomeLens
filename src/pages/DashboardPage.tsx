@@ -39,6 +39,7 @@ function fmtDate(iso: string): string {
 }
 
 type SortKey =
+  | "photo"
   | "address"
   | "town"
   | "status"
@@ -73,6 +74,29 @@ function locationLabel(p: Property): string {
 }
 
 const COLUMNS: Column[] = [
+  {
+    key: "photo",
+    label: "",
+    numeric: false,
+    value: (r) => r.property.photoUrl ?? "",
+    render: (r) =>
+      r.property.photoUrl ? (
+        <Link to={`/property/${r.property.id}`}>
+          <img
+            className="dash-thumb"
+            src={r.property.photoUrl}
+            alt=""
+            loading="lazy"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+            }}
+          />
+        </Link>
+      ) : (
+        <span className="dash-thumb dash-thumb--empty" aria-hidden />
+      ),
+    csv: (r) => r.property.photoUrl ?? "",
+  },
   {
     key: "address",
     label: "Address",

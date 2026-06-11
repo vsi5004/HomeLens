@@ -214,6 +214,78 @@ body {
   font-weight: 500;
 }
 
+/* Listing photo / thumbnails (shown in add form, details, dashboard, map popup). */
+.autofill-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.autofill-photo-img {
+  width: 100%;
+  max-width: 320px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border, #d8d8e0);
+}
+
+.property-hero {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border, #d8d8e0);
+  margin: 4px 0 16px;
+}
+
+.listing-photo-preview img {
+  width: 100%;
+  max-width: 320px;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border, #d8d8e0);
+}
+
+.dash-thumb {
+  display: block;
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border, #d8d8e0);
+}
+
+.dash-thumb--empty {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.mv-popup {
+  max-width: 240px;
+}
+
+.mv-popup-img {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.mv-popup-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.mv-popup-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
 .bookmarklet-actions {
   display: flex;
   gap: 8px;

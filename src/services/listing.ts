@@ -12,6 +12,7 @@ export interface ListingMetadata {
   propertyType: string | null;
   latitude: number | null;
   longitude: number | null;
+  photoUrl: string | null;
   warnings: string[];
 }
 
