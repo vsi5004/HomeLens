@@ -133,6 +133,7 @@ async fn dispatch(
 
         // ----- schools -----
         "get_schools" => ok(core::schools::get_schools(db, field(&b, "propertyId")?)),
+        "list_all_school_results" => ok(core::schools::list_all_school_results(db)),
         "compute_schools" => ok(core::schools::compute_schools(db, field(&b, "propertyId")?).await),
         "import_njdoe_schools" => ok(core::schools::import_njdoe_schools(
             db,

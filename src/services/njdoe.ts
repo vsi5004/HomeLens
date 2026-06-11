@@ -82,6 +82,7 @@ const METRIC_FIELDS: { label: string; aliases: string[] }[] = [
   { label: "Chronic absenteeism", aliases: ["chronic absenteeism", "chronically absent"] },
   { label: "Graduation rate", aliases: ["graduation rate", "grad rate", "4 year graduation"] },
   { label: "Student/teacher ratio", aliases: ["student to teacher ratio", "student teacher ratio", "student faculty ratio"] },
+  { label: "Summative score", aliases: ["summative score", "summative rating", "accountability summative"] },
 ];
 
 function findIndex(headers: string[], aliases: string[]): number {

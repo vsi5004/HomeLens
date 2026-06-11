@@ -177,6 +177,11 @@ fn get_schools(db: State<'_, Db>, property_id: String) -> Result<Vec<core::model
 }
 
 #[tauri::command]
+fn list_all_school_results(db: State<'_, Db>) -> Result<Vec<core::models::SchoolResult>, String> {
+    core::schools::list_all_school_results(db.inner())
+}
+
+#[tauri::command]
 async fn compute_schools(
     db: State<'_, Db>,
     property_id: String,
@@ -332,6 +337,7 @@ pub fn run() {
             list_all_amenities,
             compute_amenities,
             get_schools,
+            list_all_school_results,
             compute_schools,
             import_njdoe_schools,
             njdoe_count,

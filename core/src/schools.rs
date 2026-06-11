@@ -28,6 +28,25 @@ pub fn get_schools(db: &Db, property_id: String) -> Result<Vec<SchoolResult>, St
     Ok(out)
 }
 
+/// Read all cached school results across every property (for dashboard scoring,
+/// mirroring `list_all_routes` / `list_all_amenities`). No API calls.
+pub fn list_all_school_results(db: &Db) -> Result<Vec<SchoolResult>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let sql = format!(
+        "SELECT {SCHOOL_COLUMNS} FROM school_results \
+         ORDER BY property_id, distance_meters"
+    );
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map([], SchoolResult::from_row)
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    for r in rows {
+        out.push(r.map_err(|e| e.to_string())?);
+    }
+    Ok(out)
+}
+
 /// Recompute and cache nearby schools for a property via Google Places (one
 /// billed call). Best-effort. Re-fetching preserves any existing NJDOE matches by
 /// school name so a user's manual binding survives a refresh.
@@ -198,7 +217,9 @@ pub fn import_njdoe_schools(
                 school_name = excluded.school_name,
                 grade_span = excluded.grade_span,
                 enrollment = excluded.enrollment,
-                metrics_json = excluded.metrics_json,
+                -- Merge metrics so narrow per-domain imports accumulate instead
+                -- of overwriting (NJDOE ships each metric in a separate file).
+                metrics_json = json_patch(njdoe_schools.metrics_json, excluded.metrics_json),
                 source = excluded.source,
                 imported_at = excluded.imported_at",
             rusqlite::params![

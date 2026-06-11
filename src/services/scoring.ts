@@ -1,6 +1,7 @@
 import type { Property } from "./properties";
 import type { RouteResult } from "./routes";
 import type { AmenityResult } from "./amenities";
+import { parseMetrics, type SchoolResult } from "./schools";
 import { getSetting, setSetting, SETTING_KEYS } from "./settings";
 
 /**
@@ -9,9 +10,10 @@ import { getSetting, setSetting, SETTING_KEYS } from "./settings";
  * given property, so a missing component (e.g. no drive times yet) doesn't drag
  * the score toward zero — it's simply excluded and the rest are renormalized.
  *
- * HONESTY NOTE (brief §6.5): school, propertyValue, and subjective are
- * *manually entered* 0–100 fields in the MVP, so the overall score is largely a
- * weighted blend of hand-entered numbers, not computed analysis.
+ * NOTE: the `school` sub-score is now computed from imported NJDOE metrics on a
+ * property's manually-matched schools (see `propertySchoolScore`). `propertyValue`
+ * and `subjective` remain *manually entered* 0–100 fields. The legacy
+ * `manualSchoolScore` column is kept but no longer feeds the blend.
  */
 export interface ScoringWeights {
   familyAccess: number;
@@ -33,7 +35,7 @@ export const DEFAULT_WEIGHTS: ScoringWeights = {
 
 export const WEIGHT_LABELS: Record<keyof ScoringWeights, string> = {
   familyAccess: "Family access",
-  school: "School (manual)",
+  school: "School (NJDOE)",
   amenity: "Amenities",
   propertyValue: "Property value (manual)",
   tax: "Tax burden",
@@ -111,6 +113,55 @@ export function amenityScore(milesByCategory: number[]): number | null {
   if (valid.length === 0) return null;
   const sum = valid.reduce((acc, m) => acc + interpolate(m, points), 0);
   return clamp100(sum / valid.length);
+}
+
+/** Parse an NJDOE metric like "56.2%" or "21.98" into a number, or null. */
+function parsePct(v: string | number | undefined): number | null {
+  if (v == null) return null;
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+/** The metric labels that feed the computed school score, in display order. */
+export const SCHOOL_METRIC_KEYS = [
+  "ELA proficiency",
+  "Math proficiency",
+  "Graduation rate",
+  "Chronic absenteeism",
+] as const;
+
+/**
+ * Transparent 0–100 school score from one school's NJDOE metrics: the average of
+ * whichever of ELA %, Math %, 4-yr graduation %, and (100 − chronic absenteeism %)
+ * are present. Returns null if none are available.
+ */
+export function schoolScoreFromMetrics(
+  metrics: Record<string, string | number>,
+): number | null {
+  const parts: number[] = [];
+  const ela = parsePct(metrics["ELA proficiency"]);
+  const math = parsePct(metrics["Math proficiency"]);
+  const grad = parsePct(metrics["Graduation rate"]);
+  const absent = parsePct(metrics["Chronic absenteeism"]);
+  if (ela != null) parts.push(ela);
+  if (math != null) parts.push(math);
+  if (grad != null) parts.push(grad);
+  if (absent != null) parts.push(clamp100(100 - absent));
+  if (parts.length === 0) return null;
+  return clamp100(parts.reduce((a, b) => a + b, 0) / parts.length);
+}
+
+/**
+ * A property's school sub-score: the average computed score of its schools that
+ * are manually matched to an NJDOE record (unmatched nearby schools are ignored).
+ */
+export function propertySchoolScore(schools: SchoolResult[]): number | null {
+  const scores = schools
+    .filter((s) => s.matchedNjdoeId)
+    .map((s) => schoolScoreFromMetrics(parseMetrics(s.metricsJson)))
+    .filter((n): n is number => n != null);
+  if (scores.length === 0) return null;
+  return clamp100(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
 /**
@@ -201,6 +252,7 @@ export function buildRow(
   property: Property,
   routes: RouteResult[],
   amenities: AmenityResult[],
+  schools: SchoolResult[],
   weights: ScoringWeights,
 ): ComparisonRow {
   const durMin = (key: string): number | null => {
@@ -234,7 +286,7 @@ export function buildRow(
     familyAccess: familyAccessScore(
       [parentsMinutes, inlawsMinutes].filter((m): m is number => m != null),
     ),
-    school: property.manualSchoolScore,
+    school: propertySchoolScore(schools),
     amenity: amenityScore(allCategoryMiles),
     propertyValue: property.manualPropertyValueScore,
     tax: taxScore(property.annualTaxes, basis),

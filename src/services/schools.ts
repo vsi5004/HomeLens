@@ -52,6 +52,11 @@ export async function getSchools(propertyId: string): Promise<SchoolResult[]> {
   return invoke<SchoolResult[]>("get_schools", { propertyId });
 }
 
+/** All cached school results across every property (for dashboard scoring). */
+export async function getAllSchools(): Promise<SchoolResult[]> {
+  return invoke<SchoolResult[]>("list_all_school_results");
+}
+
 export async function computeSchools(propertyId: string): Promise<SchoolResult[]> {
   return invoke<SchoolResult[]>("compute_schools", { propertyId });
 }

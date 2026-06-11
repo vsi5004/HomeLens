@@ -8,6 +8,7 @@ import {
 } from "../services/properties";
 import { getAllRoutes, type RouteResult } from "../services/routes";
 import { getAllAmenities, type AmenityResult } from "../services/amenities";
+import { getAllSchools, type SchoolResult } from "../services/schools";
 import {
   buildRow,
   loadWeights,
@@ -398,6 +399,7 @@ export default function DashboardPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [routes, setRoutes] = useState<RouteResult[]>([]);
   const [amenities, setAmenities] = useState<AmenityResult[]>([]);
+  const [schools, setSchools] = useState<SchoolResult[]>([]);
   const [weights, setWeights] = useState<ScoringWeights>(DEFAULT_WEIGHTS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -412,15 +414,17 @@ export default function DashboardPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [props, allRoutes, allAmenities, w] = await Promise.all([
+        const [props, allRoutes, allAmenities, allSchools, w] = await Promise.all([
           listProperties(),
           getAllRoutes(),
           getAllAmenities(),
+          getAllSchools(),
           loadWeights(),
         ]);
         setProperties(props);
         setRoutes(allRoutes);
         setAmenities(allAmenities);
+        setSchools(allSchools);
         setWeights(w);
       } catch (e) {
         setError(String(e));
@@ -437,10 +441,11 @@ export default function DashboardPage() {
           p,
           routes.filter((r) => r.propertyId === p.id),
           amenities.filter((a) => a.propertyId === p.id),
+          schools.filter((s) => s.propertyId === p.id),
           weights,
         ),
       ),
-    [properties, routes, amenities, weights],
+    [properties, routes, amenities, schools, weights],
   );
 
   const towns = useMemo(
@@ -515,10 +520,11 @@ export default function DashboardPage() {
         <div>
           <h1 className="page-title">Comparison</h1>
           <p className="muted">
-            Weighted scores blend drive times, amenities, taxes, and your manual
-            school/value/gut-feel ratings. School, property-value, and subjective
-            sub-scores are <em>hand-entered</em>, so treat “Overall” as a guided
-            opinion, not data-derived truth.
+            Weighted scores blend drive times, amenities, taxes, the NJDOE school
+            score, and your manual value/gut-feel ratings. The school sub-score is
+            computed from NJDOE metrics on matched schools; property-value and
+            subjective sub-scores are still <em>hand-entered</em>, so treat
+            “Overall” as a guided opinion, not data-derived truth.
           </p>
         </div>
         <button
