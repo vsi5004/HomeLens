@@ -146,10 +146,25 @@ export default function AddPropertyPage() {
         listPrice: parsedPrice,
       });
 
-      // Persist any extra listing details captured by autofill.
+      // Persist any extra listing details captured by autofill. update_property
+      // overwrites every column, so seed the payload from the just-created row
+      // (preserving listingUrl, listPrice, status, …) and override only extras.
       if (hasExtras(extras)) {
+        const p = result.property;
         try {
-          await updateProperty(result.property.id, {
+          await updateProperty(p.id, {
+            status: p.status,
+            listingUrl: p.listingUrl,
+            listingSource: p.listingSource,
+            listPrice: p.listPrice,
+            manualEstimatedValue: p.manualEstimatedValue,
+            annualTaxes: p.annualTaxes,
+            hoaMonthly: p.hoaMonthly,
+            lotSize: p.lotSize,
+            subjectiveScore: p.subjectiveScore,
+            manualSchoolScore: p.manualSchoolScore,
+            manualPropertyValueScore: p.manualPropertyValueScore,
+            notes: p.notes,
             beds: extras.beds,
             baths: extras.baths,
             sqft: extras.sqft,
