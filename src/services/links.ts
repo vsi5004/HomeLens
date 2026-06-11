@@ -60,8 +60,23 @@ export const LISTING_SITES: ListingSite[] = [
   },
   {
     key: "redfin",
+    // Redfin has no reliable public "search any address" URL (its endpoint is
+    // city-scoped) and blocks automated requests, so deep-linking a search comes
+    // up empty. Instead, scope a Google search to redfin.com: the canonical
+    // listing is the top result. We also strip the Google-geocoder noise
+    // ("Township", trailing ", USA") that Redfin doesn't match on.
     label: "Redfin",
-    search: (q) => `https://www.redfin.com/city/1/search?q=${encodeURIComponent(q)}`,
+    search: (q) => {
+      const clean = q
+        .replace(/,?\s*USA\s*$/i, "")
+        .replace(/\b(?:Township|Twp\.?)\b/gi, "")
+        .replace(/\s+,/g, ",")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+      return `https://www.google.com/search?q=${encodeURIComponent(
+        `site:redfin.com ${clean}`,
+      )}`;
+    },
   },
   {
     key: "realtor",
